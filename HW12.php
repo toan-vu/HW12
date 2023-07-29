@@ -1,43 +1,33 @@
-<?php 
-// $file = @fopen('data.txt', 'r'); 
-// if (!$file)
-// echo "Mở file không thành công"; 
-// else { 
-// while (!feof($file)) {//feof trả về true nếu ở vị trí cuối cùng của file
-//  echo fgetc($file); // đọc ra từng ký tự trong file 
-// } 
-// }
+<?php
+// Tên file
+$fileName = 'data.txt';
 
-
-$file = file_exists("data.txt");
-if (!$file) 
-echo "file không tồn tại";
-else echo "file có tồn tại";
-
-$file = "data.txt";
-if(is_writable($file)) {
-  echo ("$file is writable");
-} else {
-  echo ("$file is not writable");
+// Tạo file nếu chưa tồn tại
+if (!file_exists($fileName)) {
+    file_put_contents($fileName, '');
+    echo "File $fileName đã được tạo mới.<br>";
 }
 
-$file = @fopen('data.txt', 'r'); 
-if (!$file)
-echo "Mở file không thành công"; 
-else { 
-while (!feof($file)) {//feof trả về true nếu ở vị trí cuối cùng của file
- echo fgets($file); // đọc ra từng dòng
-} 
-}
+// Kiểm tra xem file có cho phép ghi không
+if (is_writable($fileName)) {
+    // Mở file để ghi nội dung
+    $file = fopen($fileName, 'w');
 
-$file = @fopen('data.txt', 'w');
-if (!$file)
-    echo "Mở file không thành công";
-else {
-    $data = 'xin chào';
-    fwrite($file, $data);
+    // Ghi nội dung vào file
+    $content = "Hello ";
+    fwrite($file, $content);
+
+    // Đóng file
     fclose($file);
-}
+    echo "Đã ghi nội dung vào file $fileName và đã đóng file.<br>";
 
-unlink("data.txt");
+    // Xóa file
+    if (unlink($fileName)) {
+        echo "Đã xóa file $fileName.<br>";
+    } else {
+        echo "Không thể xóa file $fileName.<br>";
+    }
+} else {
+    echo "Không thể ghi vào file $fileName. Kiểm tra lại quyền truy cập.<br>";
+}
 ?>

@@ -1,55 +1,56 @@
 <?php
-if(isset($_POST["submit"])){
-  $name = $_POST["name"];
-  if($_FILES["image"]["error"] == 1){
-    echo
-    "<script> alert('Image Does Not Exist'); </script>"
-    ;
-  }
-  else{
-    $fileName = $_FILES["image"]["name"];
-    $fileSize = $_FILES["image"]["size"];
-    $tmpName = $_FILES["image"]["tmp_name"];
+class ImageUpload
+{
+    private $fileName;
+    private $fileType;
 
-    $validImageExtension = ['jpg', 'jpeg', 'png'];
-    $imageExtension = explode('.', $fileName);
-    $imageExtension = strtolower(end($imageExtension));
-    if ( !in_array($imageExtension, $validImageExtension) ){
-      echo
-      "
-      <script>
-        alert('Invalid Image Extension');
-      </script>
-      ";
+    public function getFileName()
+    {
+        return $this->fileName;
     }
-    else if($fileSize > 1000000){
-      echo
-      "
-      <script>
-        alert('Image Size Is Too Large');
-      </script>
-      ";
-    }
-    else{
-      $newImageName = uniqid();
-      $newImageName .= '.' . $imageExtension;
 
+    public function moveFile($file)
+    {
+        $uploadDir = './img'; // Thư mục để lưu trữ file được tải lên
 
-      move_uploaded_file($tmpName, 'img/' . $newImageName);
-      echo
-      "
-      <script>
-        alert('Successfully Added');
-        document.location.href = 'index.php';
-      </script>
-      ";
+        // Kiểm tra xem có lỗi khi upload hay không
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return false;
+        }
+
+        // Lấy tên file và kiểu file
+        $this->fileName = basename($file['name']);
+        $this->fileType = strtolower(pathinfo($this->fileName, PATHINFO_EXTENSION));
+
+        // Kiểm tra kiểu file (jpeg, jpg, png, gif)
+        if (!$this->isValidFileType()) {
+            return false;
+        }
+
+        // Di chuyển file vào thư mục lưu trữ
+        if (move_uploaded_file($file['tmp_name'], $uploadDir . $this->fileName)) {
+            return true;
+        }
+
+        return false;
     }
-  }
+
+    private function isValidFileType()
+    {
+        $allowedTypes = array('jpeg', 'jpg', 'png', 'gif');
+        return in_array($this->fileType, $allowedTypes);
+    }
 }
 
-abstract class ImageUpload {
-    abstract public function getName();
-    abstract public function moveFile();
-    abstract public function checkfile();
+// Sử dụng lớp ImageUpload
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["fileToUpload"])) {
+    $imageUpload = new ImageUpload();
+
+    // Upload file
+    if ($imageUpload->moveFile($_FILES["fileToUpload"])) {
+        echo "File đã được tải lên thành công. Tên file: " . $imageUpload->getFileName();
+    } else {
+        echo "Không thể tải lên file.";
+    }
 }
 ?>
